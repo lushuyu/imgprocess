@@ -6,6 +6,7 @@
 #define IDABORT2                        4
 #define IDD_ABOUTBOX                    100
 #define IDD_DIALOG_EDITAPIXEL           101
+#define IDD_INTERPOLATION               103
 #define IDR_MAINFRAME                   128
 #define IDR_imageProcessingTYPE         130
 
@@ -19,6 +20,10 @@
 #define IDC_EDIT4                       1006
 #define IDC_EDIT5                       1007
 #define IDC_EDIT6                       1008
+
+#define IDC_X_SCALE                     1009
+#define IDC_Y_SCALE                     1010
+#define IDC_INTERPOLATION_METHOD        1011
 
 #define ID_IMAGEPROCESSING_OPENABMPFILE 32771
 #define ID_IMAGEPROCESSING_SAVETONEWBMP 32772

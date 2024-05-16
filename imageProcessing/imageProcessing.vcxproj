@@ -188,6 +188,7 @@
     <ClInclude Include="imageProcessing.h" />
     <ClInclude Include="imageProcessingDoc.h" />
     <ClInclude Include="imageProcessingView.h" />
+    <ClInclude Include="Inerpolation.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SetPDlg.h" />
@@ -199,6 +200,7 @@
     <ClCompile Include="imageProcessing.cpp" />
     <ClCompile Include="imageProcessingDoc.cpp" />
     <ClCompile Include="imageProcessingView.cpp" />
+    <ClCompile Include="Inerpolation.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="SetPDlg.cpp" />
     <ClCompile Include="_GlobalCommon.cpp" />

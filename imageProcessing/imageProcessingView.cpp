@@ -9,6 +9,7 @@
 
 #include "GetPDlg.h"
 #include "SetPDlg.h"
+#include "Inerpolation.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -204,16 +205,33 @@ void CimageProcessingView::OnImageprocessSetpixelvalue()
 //Image interpolaion
 void CimageProcessingView::OnImageprocessInerpolation()
 {
-	if(pFileBuf == NULL) return;
-	/**/
-	//Add your code to choose method (nearest or bilinear) and zoom factors
-	int newWidth  = 500;
-	int newHeight = 490;
-	char *pNewImage = ImageInterpolation(pFileBuf,newWidth,newHeight,0);
-	delete [] pFileBuf;
-	pFileBuf = pNewImage;
-	Invalidate();
-	UpdateWindow();
+	if (pFileBuf == NULL) return;
+
+	BITMAPINFOHEADER *pBmpInfo = GetDIBINFO(pFileBuf);
+	int currentWidth = pBmpInfo->biWidth;
+	int currentHeight = pBmpInfo->biHeight;
+
+	CInterpolationDialog dlg;
+	if (dlg.DoModal() == IDOK)
+	{
+		float xScale = dlg.m_xScale;
+		float yScale = dlg.m_yScale;
+		int interpolationMethod = dlg.m_interpolationMethod;
+
+		int newWidth = static_cast<int>(currentWidth * xScale);
+		int newHeight = static_cast<int>(currentHeight * yScale);
+
+		char *pNewImage = ImageInterpolation(pFileBuf, newWidth, newHeight, interpolationMethod);
+		// ImageInterpolation() 功能: 图像插值
+		// nMethod  插值算法
+		// 0 = 最临近插值法
+		// 1 = (双)线性插值法
+
+		delete[] pFileBuf;
+		pFileBuf = pNewImage;
+		Invalidate();
+		UpdateWindow();
+	}
 }
 
 //Gaussian smoothing
