@@ -7,6 +7,8 @@
 #include "imageProcessingView.h"
 #include "_GlobalCommon.h"
 
+#include "GetPDlg.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -122,7 +124,7 @@ void CimageProcessingView::OnImageprocessSavetofile()
 //Display BMP file header
 void CimageProcessingView::OnImageprocessDisplayfileheader()
 {
-	if(pFileBuf == NULL) return;
+	if(pFileBuf == NULL) {return;}	
 	/**/
 	DisplayHeaderMessage(pFileBuf);
 }
@@ -141,6 +143,14 @@ void CimageProcessingView::OnImageprocessDisplaypalette()
 	else
 	{
 		//Here are your code
+		CString paletteInfo;
+        for(int i = 0; i < num; ++i)
+        {
+            CString colorInfo;
+            colorInfo.Format("Color %3d - R: %03d, G: %03d, B: %03d\n", i, pallete[i].rgbRed, pallete[i].rgbGreen, pallete[i].rgbBlue);
+            paletteInfo += colorInfo;
+        }
+        AfxMessageBox(paletteInfo);
 	}
 }
 
@@ -150,8 +160,12 @@ void CimageProcessingView::OnImageprocessGetpixelvalue()
 	if(pFileBuf == NULL) return;
 	/**/
 	//Add your code to choose the coordinate (x,y)
-	int x = 100;
-	int y = 100;
+	GetPDlg dlg;
+	int x=0, y=0;
+	if (dlg.DoModal() == IDOK) {
+		x = dlg.m_nX;
+		y = dlg.m_nY;
+	}
 	RGBQUAD rgb;
 	bool bGray;
 	GetPixel(pFileBuf,x,y,&rgb,&bGray);

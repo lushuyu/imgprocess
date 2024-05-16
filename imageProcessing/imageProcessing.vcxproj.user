@@ -3,4 +3,8 @@
   <PropertyGroup>
     <RESOURCE_FILE>imageProcessing.rc</RESOURCE_FILE>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LocalDebuggerMergeEnvironment>true</LocalDebuggerMergeEnvironment>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
 </Project>
