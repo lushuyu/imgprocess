@@ -474,3 +474,66 @@ char *GaussianSmooth(char *pBmpFileBuf, float stdDev)
 
     return pNewBmpFileBuf;
 }
+
+#include <algorithm>
+
+// Median Filter Algo
+char* MedianFilter(char* pBmpFileBuf, int filterSize)
+{
+	BITMAPFILEHEADER* pFileHeader = (BITMAPFILEHEADER*)pBmpFileBuf;
+	BITMAPINFOHEADER* pDIBInfo = (BITMAPINFOHEADER*)(pBmpFileBuf + sizeof(BITMAPFILEHEADER));
+	int orgWidth = pDIBInfo->biWidth;
+	int orgHeight = pDIBInfo->biHeight;
+	int colorBits = pDIBInfo->biBitCount;
+
+	if (colorBits != 24) {
+		AfxMessageBox("Only 24-bit BMP files are supported for median filtering");
+		return nullptr;
+	}
+
+	long bytesPerRow = GetWidthBytes(pBmpFileBuf);
+	long newBmpFileSize = pFileHeader->bfSize;
+	char* pNewBmpFileBuf = new char[newBmpFileSize];
+	memcpy(pNewBmpFileBuf, pBmpFileBuf, pFileHeader->bfOffBits);
+	BITMAPFILEHEADER* pNewFileHeader = (BITMAPFILEHEADER*)pNewBmpFileBuf;
+	BITMAPINFOHEADER* pNewDIBInfo = (BITMAPINFOHEADER*)(pNewBmpFileBuf + sizeof(BITMAPFILEHEADER));
+	char* pNewDIBData = pNewBmpFileBuf + pNewFileHeader->bfOffBits;
+
+	int radius = filterSize / 2;
+	std::vector<BYTE> rValues, gValues, bValues;
+
+	for (int y = 0; y < orgHeight; ++y) {
+		for (int x = 0; x < orgWidth; ++x) {
+			rValues.clear();
+			gValues.clear();
+			bValues.clear();
+
+			for (int dy = -radius; dy <= radius; ++dy) {
+				for (int dx = -radius; dx <= radius; ++dx) {
+					int nx = std::clamp(x + dx, 0, orgWidth - 1);
+					int ny = std::clamp(y + dy, 0, orgHeight - 1);
+
+					RGBQUAD pixel;
+					GetPixel(pBmpFileBuf, nx, ny, &pixel);
+
+					rValues.push_back(pixel.rgbRed);
+					gValues.push_back(pixel.rgbGreen);
+					bValues.push_back(pixel.rgbBlue);
+				}
+			}
+
+			std::nth_element(rValues.begin(), rValues.begin() + rValues.size() / 2, rValues.end());
+			std::nth_element(gValues.begin(), gValues.begin() + gValues.size() / 2, gValues.end());
+			std::nth_element(bValues.begin(), bValues.begin() + bValues.size() / 2, bValues.end());
+
+			RGBQUAD medianPixel;
+			medianPixel.rgbRed = rValues[rValues.size() / 2];
+			medianPixel.rgbGreen = gValues[gValues.size() / 2];
+			medianPixel.rgbBlue = bValues[bValues.size() / 2];
+
+			SetPixel(pNewBmpFileBuf, x, y, medianPixel);
+		}
+	}
+
+	return pNewBmpFileBuf;
+}

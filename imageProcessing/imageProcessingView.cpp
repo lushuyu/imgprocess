@@ -11,6 +11,7 @@
 #include "SetPDlg.h"
 #include "Inerpolation.h"
 #include "GaussianSmooth.h"
+#include "MedianFilterDialog.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -254,10 +255,31 @@ void CimageProcessingView::OnImageprocessGausssmooth()
     }
 }
 
-//Median filtering
+// Median filtering
 void CimageProcessingView::OnImageprocessMedianfilter()
 {
+	if (pFileBuf == NULL) return;
+
+	CMedianFilterDialog dlg;
+	if (dlg.DoModal() == IDOK)
+	{
+		int filterSize = dlg.m_filterSize;
+
+		char* pNewImage = MedianFilter(pFileBuf, filterSize);
+		if (pNewImage != nullptr)
+		{
+			delete[] pFileBuf;
+			pFileBuf = pNewImage;
+			Invalidate();
+			UpdateWindow();
+		}
+		else
+		{
+			AfxMessageBox("Failed to apply median filter");
+		}
+	}
 }
+
 
 //Bilateral filtering
 void CimageProcessingView::OnImageprocessBilateralfilter()
