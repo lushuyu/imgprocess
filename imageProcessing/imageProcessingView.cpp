@@ -10,6 +10,7 @@
 #include "GetPDlg.h"
 #include "SetPDlg.h"
 #include "Inerpolation.h"
+#include "GaussianSmooth.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -237,6 +238,20 @@ void CimageProcessingView::OnImageprocessInerpolation()
 //Gaussian smoothing
 void CimageProcessingView::OnImageprocessGausssmooth()
 {
+    if (pFileBuf == NULL) return;
+
+    CGaussianSmoothDialog dlg;
+    if (dlg.DoModal() == IDOK)
+    {
+        float stdDev = dlg.m_stdDev;
+
+        char *pNewImage = GaussianSmooth(pFileBuf, stdDev);
+
+        delete[] pFileBuf;
+        pFileBuf = pNewImage;
+        Invalidate();
+        UpdateWindow();
+    }
 }
 
 //Median filtering

@@ -184,6 +184,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />
+    <ClInclude Include="GaussianSmooth.h" />
     <ClInclude Include="GetPDlg.h" />
     <ClInclude Include="imageProcessing.h" />
     <ClInclude Include="imageProcessingDoc.h" />
@@ -196,6 +197,7 @@
     <ClInclude Include="_GlobalCommon.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="GaussianSmooth.cpp" />
     <ClCompile Include="GetPDlg.cpp" />
     <ClCompile Include="imageProcessing.cpp" />
     <ClCompile Include="imageProcessingDoc.cpp" />

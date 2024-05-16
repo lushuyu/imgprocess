@@ -1,7 +1,10 @@
 //GlobalCommon.cpp
 #define _CRT_SECURE_NO_WARNINGS
 #include "_GlobalCommon.h"
+#include <cmath>
+#include <vector>
 
+#define M_PI 3.14159265358979323846
 /**
 	 功能: 从图像文件中建造DIB类
 	 参数: strBmpFile --- 需要打开的BMP文件名
@@ -400,4 +403,74 @@ char *ImageInterpolation(char *pBmpFileBuf,int newWidth,int newHeight,int nMetho
 	}
 	/**/
 	return( pNewBmpFileBuf );
+}
+
+// Gaussian kernel
+std::vector<float> GenerateGaussianKernel(float stdDev, int &kernelSize)
+{
+    int radius = std::ceil(3 * stdDev);
+    kernelSize = 2 * radius + 1;
+    std::vector<float> kernel(kernelSize * kernelSize);
+    float sum = 0.0f;
+
+    for (int y = -radius; y <= radius; y++) {
+        for (int x = -radius; x <= radius; x++) {
+            float value = std::exp(-(x * x + y * y) / (2 * stdDev * stdDev)) / (2 * M_PI * stdDev * stdDev);
+            kernel[(y + radius) * kernelSize + (x + radius)] = value;
+            sum += value;
+        }
+    }
+
+    for (auto &v : kernel) v /= sum;
+
+    return kernel;
+}
+
+// Gaussian smoothing func
+char *GaussianSmooth(char *pBmpFileBuf, float stdDev)
+{
+    BITMAPFILEHEADER *pFileHeader = (BITMAPFILEHEADER *)pBmpFileBuf;
+    BITMAPINFOHEADER *pDIBInfo = (BITMAPINFOHEADER *)(pBmpFileBuf + sizeof(BITMAPFILEHEADER));
+    int width = pDIBInfo->biWidth;
+    int height = pDIBInfo->biHeight;
+    int colorBits = pDIBInfo->biBitCount;
+
+    long bytesPerRow = GetWidthBytes(pBmpFileBuf);
+    long imageSize = bytesPerRow * height;
+    char *pNewBmpFileBuf = new char[pFileHeader->bfSize];
+    memcpy(pNewBmpFileBuf, pBmpFileBuf, pFileHeader->bfOffBits + imageSize);
+
+    char *pDIBData = GetDIBImageData(pBmpFileBuf);
+    char *pNewDIBData = GetDIBImageData(pNewBmpFileBuf);
+
+    int kernelSize;
+    std::vector<float> kernel = GenerateGaussianKernel(stdDev, kernelSize);
+    int radius = kernelSize / 2;
+
+#define min(a,b)            (((a) < (b)) ? (a) : (b))
+
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            float sum[3] = {0, 0, 0};
+            for (int ky = -radius; ky <= radius; ky++) {
+                for (int kx = -radius; kx <= radius; kx++) {
+                    int ix = min((x + kx > 0 ? x + kx : 0), width - 1);
+                    int iy = min((y + ky > 0 ? y + ky : 0), height - 1);
+                    RGBQUAD rgb;
+                    GetPixel(pBmpFileBuf, ix, iy, &rgb);
+                    float kernelValue = kernel[(ky + radius) * kernelSize + (kx + radius)];
+                    sum[0] += kernelValue * rgb.rgbRed;
+                    sum[1] += kernelValue * rgb.rgbGreen;
+                    sum[2] += kernelValue * rgb.rgbBlue;
+                }
+            }
+            RGBQUAD rgb;
+            rgb.rgbRed = static_cast<BYTE>(sum[0]);
+            rgb.rgbGreen = static_cast<BYTE>(sum[1]);
+            rgb.rgbBlue = static_cast<BYTE>(sum[2]);
+            SetPixel(pNewBmpFileBuf, x, y, rgb);
+        }
+    }
+
+    return pNewBmpFileBuf;
 }
