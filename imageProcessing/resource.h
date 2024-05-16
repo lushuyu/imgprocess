@@ -5,12 +5,20 @@
 
 #define IDABORT2                        4
 #define IDD_ABOUTBOX                    100
+#define IDD_DIALOG_EDITAPIXEL           101
 #define IDR_MAINFRAME                   128
 #define IDR_imageProcessingTYPE         130
 
-#define GET_PIXEL_DLG                   310
+#define GET_PIXEL_DLG                   102
 #define PixelX                          1001
 #define PixelY                          1002
+
+#define IDC_EDIT1                       1003
+#define IDC_EDIT2                       1004
+#define IDC_EDIT3                       1005
+#define IDC_EDIT4                       1006
+#define IDC_EDIT5                       1007
+#define IDC_EDIT6                       1008
 
 #define ID_IMAGEPROCESSING_OPENABMPFILE 32771
 #define ID_IMAGEPROCESSING_SAVETONEWBMP 32772

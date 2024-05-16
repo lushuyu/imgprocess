@@ -8,6 +8,7 @@
 #include "_GlobalCommon.h"
 
 #include "GetPDlg.h"
+#include "SetPDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -183,13 +184,18 @@ void CimageProcessingView::OnImageprocessSetpixelvalue()
 	if(pFileBuf == NULL) return;
 	/**/
 	//Add your code to choose the coordinate (x,y)
-	int x = 100;
-	int y = 100;
+	SetPDlg dlg;
+	int x=0 ;
+	int y=0 ;
 	RGBQUAD rgb;
-	rgb.rgbReserved = 255;
-	rgb.rgbRed      = 255;
-	rgb.rgbGreen    = 255;
-	rgb.rgbBlue     = 255;
+	if (dlg.DoModal() == IDOK) {
+		x = dlg.X;
+		y = dlg.Y;
+		rgb.rgbReserved = dlg.Res;
+		rgb.rgbRed = dlg.R;
+		rgb.rgbGreen = dlg.G;
+		rgb.rgbBlue = dlg.B;
+	}
 	SetPixel(pFileBuf,x,y,rgb);
 	Invalidate();
 	UpdateWindow();
