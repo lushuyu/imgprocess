@@ -184,6 +184,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="BilateralFilterDialog.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="GaussianSmooth.h" />
     <ClInclude Include="GetPDlg.h" />
@@ -199,6 +200,7 @@
     <ClInclude Include="_GlobalCommon.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BilateralFilterDialog.cpp" />
     <ClCompile Include="GaussianSmooth.cpp" />
     <ClCompile Include="GetPDlg.cpp" />
     <ClCompile Include="imageProcessing.cpp" />

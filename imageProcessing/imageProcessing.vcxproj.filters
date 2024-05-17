@@ -54,6 +54,9 @@
     <ClInclude Include="MedianFilterDialog.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="BilateralFilterDialog.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imageProcessing.cpp">
@@ -84,6 +87,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="MedianFilterDialog.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="BilateralFilterDialog.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

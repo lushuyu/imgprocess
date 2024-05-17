@@ -12,6 +12,7 @@
 #include "Inerpolation.h"
 #include "GaussianSmooth.h"
 #include "MedianFilterDialog.h"
+#include "BilateralFilterDialog.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -281,10 +282,33 @@ void CimageProcessingView::OnImageprocessMedianfilter()
 }
 
 
-//Bilateral filtering
+// Bilateral filtering
 void CimageProcessingView::OnImageprocessBilateralfilter()
 {
+	if (pFileBuf == NULL) return;
+
+	CBilateralFilterDialog dlg;
+	if (dlg.DoModal() == IDOK)
+	{
+		float sigmaD = dlg.m_sigma_d;
+		float sigmaR = dlg.m_sigma_R;
+
+		char* pFilteredBuf = BilateralFilter(pFileBuf, sigmaD, sigmaR);
+		if (pFilteredBuf)
+		{
+			delete[] pFileBuf;
+			pFileBuf = pFilteredBuf;
+			Invalidate();
+			UpdateWindow();
+		}
+		else
+		{
+			AfxMessageBox("Failed to apply bilateral filter");
+		}
+	}
 }
+
+
 
 //Histogram equalization
 void CimageProcessingView::OnImageprocessHistoequalization()

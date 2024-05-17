@@ -9,6 +9,7 @@
 #define IDD_INTERPOLATION               103
 #define IDD_GAUSSIAN_SMOOTH             104
 #define IDD_MEDIAN_FILTER               105
+#define IDD_BILATERAL_FILTER        106
 
 #define IDR_MAINFRAME                   128
 #define IDR_imageProcessingTYPE         130
@@ -31,6 +32,9 @@
 #define IDC_STD_DEV                     1012
 
 #define IDC_FILTER_SIZE                 1013
+
+#define IDC_SIGMA_d                     1014
+#define IDC_SIGMA_R                     1015
 
 #define ID_IMAGEPROCESSING_OPENABMPFILE 32771
 #define ID_IMAGEPROCESSING_SAVETONEWBMP 32772

@@ -6,9 +6,9 @@
 
 #define M_PI 3.14159265358979323846
 /**
-	 ¹¦ÄÜ: ´ÓÍ¼ÏñÎÄ¼şÖĞ½¨ÔìDIBÀà
-	 ²ÎÊı: strBmpFile --- ĞèÒª´ò¿ªµÄBMPÎÄ¼şÃû
-	 ·µ»Ø£ºÎÄ¼ş»º³åÇøÖ¸Õë (NULL±íÊ¾Ê§°Ü)
+	 åŠŸèƒ½: ä»å›¾åƒæ–‡ä»¶ä¸­å»ºé€ DIBç±»
+	 å‚æ•°: strBmpFile --- éœ€è¦æ‰“å¼€çš„BMPæ–‡ä»¶å
+	 è¿”å›ï¼šæ–‡ä»¶ç¼“å†²åŒºæŒ‡é’ˆ (NULLè¡¨ç¤ºå¤±è´¥)
 **/
 char *OpenBMPfile(CString strBmpFile)
 {
@@ -34,8 +34,8 @@ char *OpenBMPfile(CString strBmpFile)
 	BITMAPINFOHEADER *pBmpInfo = (BITMAPINFOHEADER *)(pFileBuf + sizeof(BITMAPFILEHEADER));
 	/**/
 	if(	pBmpHead->bfType   != 0x4D42 ||		//"BM"=0x424D
-	    pBmpInfo->biSize   != 0x28   ||		// Î»Í¼ĞÅÏ¢×Ó½á¹¹³¤¶È(µÈÓÚ40,¼´0x28)
-		pBmpInfo->biPlanes != 0x01 )		// ´ËÓò±ØĞëµÈÓÚ1
+	    pBmpInfo->biSize   != 0x28   ||		// ä½å›¾ä¿¡æ¯å­ç»“æ„é•¿åº¦(ç­‰äº40,å³0x28)
+		pBmpInfo->biPlanes != 0x01 )		// æ­¤åŸŸå¿…é¡»ç­‰äº1
 	{
 		AfxMessageBox("It isn't a valid BMP file");
 		return( NULL );
@@ -238,11 +238,11 @@ void DisplayImage(CDC *pDC,char *pBmpFileBuf,int disp_xL,int disp_yL,int disp_Wi
 
 ///////////////////////////////////////////////////////////////////////	
 ///////////////////////////////////////////////////////////////////////	
-//   ÏóËØ²Ù×÷
+//   è±¡ç´ æ“ä½œ
 
-//	 ¶ÁÏóËØÑÕÉ«Öµ
-//	 ·µ»Ø: >=0 ±íÊ¾ÏóËØÔÚÎ»Í¼Êı¾İÖĞµÄÆ«ÒÆÖµ
-//		    <0 Ê§°Ü»ò²ÎÊıÎŞĞ§
+//	 è¯»è±¡ç´ é¢œè‰²å€¼
+//	 è¿”å›: >=0 è¡¨ç¤ºè±¡ç´ åœ¨ä½å›¾æ•°æ®ä¸­çš„åç§»å€¼
+//		    <0 å¤±è´¥æˆ–å‚æ•°æ— æ•ˆ
 long GetPixel(char *pFileBuffer,int x,int y,RGBQUAD rgb[1],bool bGray[1])
 {
 	int  nColorBits   = GetColorBits(pFileBuffer);
@@ -280,7 +280,7 @@ long GetPixel(char *pFileBuffer,int x,int y,RGBQUAD rgb[1],bool bGray[1])
 	return( nOffInImage );
 }
 
-//  ÉèÖÃÏñËØ(x,y)µÄÑÕÉ«Öµ
+//  è®¾ç½®åƒç´ (x,y)çš„é¢œè‰²å€¼
 void SetPixel(char *pFileBuffer,int x,int y,RGBQUAD rgb)
 {
 	int  nColorBits   = GetColorBits(pFileBuffer);
@@ -311,7 +311,7 @@ void SetPixel(char *pFileBuffer,int x,int y,RGBQUAD rgb)
 
 ///////////////////////////////////////////////////////////////////////	
 ///////////////////////////////////////////////////////////////////////	
-// ±£´æÎªBMPÎÄ¼ş
+// ä¿å­˜ä¸ºBMPæ–‡ä»¶
 
 BOOL SaveDIB(char *pFileBuffer,CString strBmpFile)
 {
@@ -331,15 +331,15 @@ BOOL SaveDIB(char *pFileBuffer,CString strBmpFile)
 
 ///////////////////////////////////////////////////////////////////////	
 ///////////////////////////////////////////////////////////////////////	
-// Í¼Ïñ²åÖµ
+// å›¾åƒæ’å€¼
 
 /**
-	 ¹¦ÄÜ: Í¼Ïñ²åÖµ
-		   nMethod  ²åÖµËã·¨
-					0 = ×îÁÙ½ü²åÖµ·¨
-					1 = (Ë«)ÏßĞÔ²åÖµ·¨
-	 ·µ»Ø: ĞÂÍ¼ÏñµÄBMPÎÄ¼ş»º³åÇøÊ×µØÖ·
-           NULL ±íÊ¾Ê§°Ü£¨ÄÚ´æ²»×ã£©
+	 åŠŸèƒ½: å›¾åƒæ’å€¼
+		   nMethod  æ’å€¼ç®—æ³•
+					0 = æœ€ä¸´è¿‘æ’å€¼æ³•
+					1 = (åŒ)çº¿æ€§æ’å€¼æ³•
+	 è¿”å›: æ–°å›¾åƒçš„BMPæ–‡ä»¶ç¼“å†²åŒºé¦–åœ°å€
+           NULL è¡¨ç¤ºå¤±è´¥ï¼ˆå†…å­˜ä¸è¶³ï¼‰
 **/
 char *ImageInterpolation(char *pBmpFileBuf,int newWidth,int newHeight,int nMethod)
 {
@@ -372,14 +372,14 @@ char *ImageInterpolation(char *pBmpFileBuf,int newWidth,int newHeight,int nMetho
 		{
 			RGBQUAD rgb;
 			float fx = x * xScale;
-			if( nMethod == 0 )		//×îÁÙ½ü²åÖµ·¨
+			if( nMethod == 0 )		//æœ€ä¸´è¿‘æ’å€¼æ³•
 			{
 				int xx = min( (int)(fx+0.5), orgWidth - 1 );
 				int yy = min( (int)(fy+0.5), orgHeight - 1 );
 				GetPixel(pBmpFileBuf, xx, yy, &rgb);
 			}
 			else
-			{						//(Ë«)ÏßĞÔ²åÖµ·¨
+			{						//(åŒ)çº¿æ€§æ’å€¼æ³•
 				RGBQUAD rgbLT,rgbRT,rgbLB,rgbRB;
 				int   x1 = (int)fx;
 				int   x2 = min(x1+1, orgWidth-1);
@@ -536,4 +536,64 @@ char* MedianFilter(char* pBmpFileBuf, int filterSize)
 	}
 
 	return pNewBmpFileBuf;
+}
+
+#include <cmath>
+#include <vector>
+
+char* BilateralFilter(char* pBmpFileBuf, float sigma_d, float sigma_r)
+{
+	BITMAPFILEHEADER* pFileHeader = (BITMAPFILEHEADER*)pBmpFileBuf;
+	BITMAPINFOHEADER* pDIBInfo = (BITMAPINFOHEADER*)(pBmpFileBuf + sizeof(BITMAPFILEHEADER));
+	int width = pDIBInfo->biWidth;
+	int height = pDIBInfo->biHeight;
+	int colorBits = pDIBInfo->biBitCount;
+
+	long bytesPerRow = GetWidthBytes(pBmpFileBuf);
+	long bmpFileSize = pFileHeader->bfSize;
+	char* pFilteredBuf = new char[bmpFileSize];
+	memcpy(pFilteredBuf, pBmpFileBuf, pFileHeader->bfOffBits);
+
+	const int radius = static_cast<int>(2 * sigma_d);
+	const int windowSize = 2 * radius + 1;
+
+	// é«˜æ–¯å‡½æ•°
+	auto gaussian = [](float x, float sigma) {
+		return expf(-(x * x) / (2 * sigma * sigma));
+	};
+
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++) {
+			float sum = 0.0f;
+			float normFactor = 0.0f;
+			RGBQUAD rgbCenter;
+			GetPixel(pBmpFileBuf, x, y, &rgbCenter);
+
+			for (int dy = -radius; dy <= radius; dy++) {
+				for (int dx = -radius; dx <= radius; dx++) {
+					int nx = min(max(x + dx, 0), width - 1);
+					int ny = min(max(y + dy, 0), height - 1);
+
+					RGBQUAD rgbNeighbor;
+					GetPixel(pBmpFileBuf, nx, ny, &rgbNeighbor);
+
+					float spatialWeight = gaussian(sqrtf(dx * dx + dy * dy), sigma_d);
+					float rangeWeight = gaussian(sqrtf(powf(rgbCenter.rgbRed - rgbNeighbor.rgbRed, 2) +
+						powf(rgbCenter.rgbGreen - rgbNeighbor.rgbGreen, 2) +
+						powf(rgbCenter.rgbBlue - rgbNeighbor.rgbBlue, 2)), sigma_r);
+
+					float weight = spatialWeight * rangeWeight;
+
+					sum += weight * rgbNeighbor.rgbRed;
+					normFactor += weight;
+				}
+			}
+
+			RGBQUAD rgbFiltered = rgbCenter;
+			rgbFiltered.rgbRed = rgbFiltered.rgbGreen = rgbFiltered.rgbBlue = static_cast<BYTE>(sum / normFactor);
+			SetPixel(pFilteredBuf, x, y, rgbFiltered);
+		}
+	}
+
+	return pFilteredBuf;
 }
