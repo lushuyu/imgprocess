@@ -33,3 +33,5 @@ void NonMaximumSuppression(const unsigned char* src, unsigned char* dst, int wid
 void DoubleThreshold(const unsigned char* src, unsigned char* dst, int width, int height, int lowThreshold, int highThreshold);
 void EdgeTrackingByHysteresis(unsigned char* src, int width, int height);
 char* CannyEdgeDetection(char* pBmpFileBuf, int lowThreshold, int highThreshold, int kernelSize);
+int OtsuThreshold(unsigned char* data, int width, int height);
+void ApplyThreshold(unsigned char* data, int width, int height, int threshold);

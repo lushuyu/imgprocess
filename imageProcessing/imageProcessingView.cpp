@@ -415,4 +415,26 @@ void CimageProcessingView::OnImageprocessCannyedge()
 //Otsu segmentation
 void CimageProcessingView::OnImageprocessOtsusegment()
 {
+    if (pFileBuf == NULL) return;
+
+    BITMAPINFOHEADER *pBmpInfo = GetDIBINFO(pFileBuf);
+    int width = pBmpInfo->biWidth;
+    int height = pBmpInfo->biHeight;
+
+    if (pBmpInfo->biBitCount != 8) {
+        AfxMessageBox("Only 8-bit grayscale images are supported for Otsu segmentation.");
+        return;
+    }
+
+    unsigned char* pImageData = (unsigned char*)GetDIBImageData(pFileBuf);
+    int threshold = OtsuThreshold(pImageData, width, height);
+
+    CString message;
+    message.Format("Otsu threshold: %d", threshold);
+    AfxMessageBox(message);
+
+    ApplyThreshold(pImageData, width, height, threshold);
+
+    Invalidate();
+    UpdateWindow();
 }

@@ -876,3 +876,55 @@ char* CannyEdgeDetection(char* pBmpFileBuf, int lowThreshold, int highThreshold,
 
 	return pNewBmpFileBuf;
 }
+
+// Otsu's thresholding method
+int OtsuThreshold(unsigned char* data, int width, int height)
+{
+    int hist[256] = {0};
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            int val = data[y * width + x];
+            hist[val]++;
+        }
+    }
+
+    int total = width * height;
+    float sum = 0;
+    for (int i = 0; i < 256; ++i)
+        sum += i * hist[i];
+
+    float sumB = 0;
+    int wB = 0;
+    int wF = 0;
+    float varMax = 0;
+    int threshold = 0;
+
+    for (int i = 0; i < 256; ++i) {
+        wB += hist[i];
+        if (wB == 0) continue;
+        wF = total - wB;
+        if (wF == 0) break;
+
+        sumB += i * hist[i];
+        float mB = sumB / wB;
+        float mF = (sum - sumB) / wF;
+
+        float varBetween = (float)wB * (float)wF * (mB - mF) * (mB - mF);
+        if (varBetween > varMax) {
+            varMax = varBetween;
+            threshold = i;
+        }
+    }
+
+    return threshold;
+}
+
+void ApplyThreshold(unsigned char* data, int width, int height, int threshold)
+{
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            int index = y * width + x;
+            data[index] = (data[index] > threshold) ? 255 : 0;
+        }
+    }
+}
