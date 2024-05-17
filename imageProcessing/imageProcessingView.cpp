@@ -308,12 +308,65 @@ void CimageProcessingView::OnImageprocessBilateralfilter()
 	}
 }
 
-
-
 //Histogram equalization
 void CimageProcessingView::OnImageprocessHistoequalization()
 {
+	if (pFileBuf == NULL) return;
+
+	BITMAPINFOHEADER *pBmpInfo = GetDIBINFO(pFileBuf);
+	int width = pBmpInfo->biWidth;
+	int height = pBmpInfo->biHeight;
+	int colorBits = pBmpInfo->biBitCount;
+
+	if (colorBits != 8) {
+		AfxMessageBox("Only 8-bit grayscale images are supported for histogram equalization");
+		return;
+	}
+
+	char *pImageData = GetDIBImageData(pFileBuf);
+
+	// Calculate the histogram
+	int histogram[256] = { 0 };
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++) {
+			int pixelValue = pImageData[y * GetWidthBytes(pFileBuf) + x] & 0xFF;
+			histogram[pixelValue]++;
+		}
+	}
+
+	// Calculate the cumulative histogram
+	int cumulativeHistogram[256] = { 0 };
+	cumulativeHistogram[0] = histogram[0];
+	for (int i = 1; i < 256; i++) {
+		cumulativeHistogram[i] = cumulativeHistogram[i - 1] + histogram[i];
+	}
+
+	// Normalize the cumulative histogram
+	int totalPixels = width * height;
+	BYTE equalizationMap[256];
+	for (int i = 0; i < 256; i++) {
+		equalizationMap[i] = static_cast<BYTE>((cumulativeHistogram[i] * 255) / totalPixels);
+	}
+
+	// Apply the equalization map to the image data
+	char *pNewImageData = new char[height * GetWidthBytes(pFileBuf)];
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++) {
+			int pixelValue = pImageData[y * GetWidthBytes(pFileBuf) + x] & 0xFF;
+			pNewImageData[y * GetWidthBytes(pFileBuf) + x] = equalizationMap[pixelValue];
+		}
+	}
+
+	// Copy new image data back to original buffer
+	memcpy(pImageData, pNewImageData, height * GetWidthBytes(pFileBuf));
+	delete[] pNewImageData;
+
+	Invalidate();
+	UpdateWindow();
 }
+
+
+
 
 //Sharpening by gradient
 void CimageProcessingView::OnImageprocessSharpengrad()
