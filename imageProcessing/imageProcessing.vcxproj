@@ -196,6 +196,7 @@
     <ClInclude Include="MedianFilterDialog.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SetPDlg.h" />
+    <ClInclude Include="SharpenDialog.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="_GlobalCommon.h" />
   </ItemGroup>
@@ -210,6 +211,7 @@
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="MedianFilterDialog.cpp" />
     <ClCompile Include="SetPDlg.cpp" />
+    <ClCompile Include="SharpenDialog.cpp" />
     <ClCompile Include="_GlobalCommon.cpp" />
   </ItemGroup>
   <ItemGroup>

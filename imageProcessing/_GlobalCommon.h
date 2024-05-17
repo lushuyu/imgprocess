@@ -26,3 +26,4 @@ char    *ImageInterpolation(char *pBmpFileBuf,int newWidth,int newHeight,int nMe
 char *GaussianSmooth(char *pBmpFileBuf, float stdDev);
 char* MedianFilter(char* pBmpFileBuf, int filterSize);
 char* BilateralFilter(char* pBmpFileBuf, float sigma_d, float sigma_r);
+char *SharpeningByGradient(char *pBmpFileBuf, float sharpenFactor);

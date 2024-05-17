@@ -597,3 +597,39 @@ char* BilateralFilter(char* pBmpFileBuf, float sigma_d, float sigma_r)
 
 	return pFilteredBuf;
 }
+
+
+char* SharpeningByGradient(char* pBmpFileBuf, float sharpenAmount)
+{
+	BITMAPFILEHEADER* pFileHeader = (BITMAPFILEHEADER*)pBmpFileBuf;
+	BITMAPINFOHEADER* pDIBInfo = (BITMAPINFOHEADER*)(pBmpFileBuf + sizeof(BITMAPFILEHEADER));
+	int width = pDIBInfo->biWidth;
+	int height = pDIBInfo->biHeight;
+	int colorBits = pDIBInfo->biBitCount;
+
+	long bytesPerRow = GetWidthBytes(pBmpFileBuf);
+	char* pSharpenedBmpFileBuf = new char[pFileHeader->bfSize];
+	memcpy(pSharpenedBmpFileBuf, pBmpFileBuf, pFileHeader->bfSize);
+
+	for (int y = 1; y < height - 1; y++)
+	{
+		for (int x = 1; x < width - 1; x++)
+		{
+			RGBQUAD rgbCenter, rgbLeft, rgbRight, rgbUp, rgbDown;
+			GetPixel(pBmpFileBuf, x, y, &rgbCenter);
+			GetPixel(pBmpFileBuf, x - 1, y, &rgbLeft);
+			GetPixel(pBmpFileBuf, x + 1, y, &rgbRight);
+			GetPixel(pBmpFileBuf, x, y - 1, &rgbUp);
+			GetPixel(pBmpFileBuf, x, y + 1, &rgbDown);
+
+			RGBQUAD rgbNew;
+			rgbNew.rgbRed = min(max(rgbCenter.rgbRed + sharpenAmount * (4 * rgbCenter.rgbRed - rgbLeft.rgbRed - rgbRight.rgbRed - rgbUp.rgbRed - rgbDown.rgbRed), 0), 255);
+			rgbNew.rgbGreen = min(max(rgbCenter.rgbGreen + sharpenAmount * (4 * rgbCenter.rgbGreen - rgbLeft.rgbGreen - rgbRight.rgbGreen - rgbUp.rgbGreen - rgbDown.rgbGreen), 0), 255);
+			rgbNew.rgbBlue = min(max(rgbCenter.rgbBlue + sharpenAmount * (4 * rgbCenter.rgbBlue - rgbLeft.rgbBlue - rgbRight.rgbBlue - rgbUp.rgbBlue - rgbDown.rgbBlue), 0), 255);
+
+			SetPixel(pSharpenedBmpFileBuf, x, y, rgbNew);
+		}
+	}
+
+	return pSharpenedBmpFileBuf;
+}

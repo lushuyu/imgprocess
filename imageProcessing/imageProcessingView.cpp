@@ -13,6 +13,7 @@
 #include "GaussianSmooth.h"
 #include "MedianFilterDialog.h"
 #include "BilateralFilterDialog.h"
+#include "SharpenDialog.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -371,7 +372,22 @@ void CimageProcessingView::OnImageprocessHistoequalization()
 //Sharpening by gradient
 void CimageProcessingView::OnImageprocessSharpengrad()
 {
+	if (pFileBuf == NULL) return;
+
+	CSharpenDialog dlg;
+	if (dlg.DoModal() == IDOK)
+	{
+		float sharpenAmount = dlg.m_sharpenFactor;
+
+		char* pSharpenedImage = SharpeningByGradient(pFileBuf, sharpenAmount);
+
+		delete[] pFileBuf;
+		pFileBuf = pSharpenedImage;
+		Invalidate();
+		UpdateWindow();
+	}
 }
+
 
 //Cany edge detection
 void CimageProcessingView::OnImageprocessCannyedge()
