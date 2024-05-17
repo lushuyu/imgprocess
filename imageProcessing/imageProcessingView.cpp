@@ -14,6 +14,7 @@
 #include "MedianFilterDialog.h"
 #include "BilateralFilterDialog.h"
 #include "SharpenDialog.h"
+#include "CannyEdgeDialog.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -392,7 +393,24 @@ void CimageProcessingView::OnImageprocessSharpengrad()
 //Cany edge detection
 void CimageProcessingView::OnImageprocessCannyedge()
 {
+	if (pFileBuf == NULL) return;
+
+	CCannyEdgeDialog dlg;
+	if (dlg.DoModal() == IDOK)
+	{
+		int lowThreshold = dlg.m_lowThreshold;
+		int highThreshold = dlg.m_highThreshold;
+		int kernelSize = dlg.m_kernelSize;
+
+		char* pNewImage = CannyEdgeDetection(pFileBuf, lowThreshold, highThreshold, kernelSize);
+
+		delete[] pFileBuf;
+		pFileBuf = pNewImage;
+		Invalidate();
+		UpdateWindow();
+	}
 }
+
 
 //Otsu segmentation
 void CimageProcessingView::OnImageprocessOtsusegment()

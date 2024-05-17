@@ -448,7 +448,7 @@ char *GaussianSmooth(char *pBmpFileBuf, float stdDev)
     int radius = kernelSize / 2;
 
 #define min(a,b)            (((a) < (b)) ? (a) : (b))
-
+#define max(a,b)            (((a) > (b)) ? (a) : (b))
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
             float sum[3] = {0, 0, 0};
@@ -632,4 +632,247 @@ char* SharpeningByGradient(char* pBmpFileBuf, float sharpenAmount)
 	}
 
 	return pSharpenedBmpFileBuf;
+}
+
+
+void GaussianBlur(const unsigned char* src, unsigned char* dst, int width, int height, int kernelSize, double sigma)
+{
+	int halfSize = kernelSize / 2;
+	double* kernel = new double[kernelSize * kernelSize];
+	double sum = 0.0;
+
+	for (int y = -halfSize; y <= halfSize; ++y)
+	{
+		for (int x = -halfSize; x <= halfSize; ++x)
+		{
+			double value = exp(-(x * x + y * y) / (2 * sigma * sigma)) / (2 * M_PI * sigma * sigma);
+			kernel[(y + halfSize) * kernelSize + (x + halfSize)] = value;
+			sum += value;
+		}
+	}
+
+
+	for (int i = 0; i < kernelSize * kernelSize; ++i)
+	{
+		kernel[i] /= sum;
+	}
+
+	for (int y = 0; y < height; ++y)
+	{
+		for (int x = 0; x < width; ++x)
+		{
+			double value = 0.0;
+			for (int ky = -halfSize; ky <= halfSize; ++ky)
+			{
+				for (int kx = -halfSize; kx <= halfSize; ++kx)
+				{
+					int px = min(max(x + kx, 0), width - 1);
+					int py = min(max(y + ky, 0), height - 1);
+					value += src[py * width + px] * kernel[(ky + halfSize) * kernelSize + (kx + halfSize)];
+				}
+			}
+			dst[y * width + x] = static_cast<unsigned char>(value);
+		}
+	}
+
+	delete[] kernel;
+}
+
+void SobelFilter(const unsigned char* src, unsigned char* dst, int width, int height, double* gradientDirection)
+{
+	const int kernelX[3][3] = {
+		{-1, 0, 1},
+		{-2, 0, 2},
+		{-1, 0, 1}
+	};
+
+	const int kernelY[3][3] = {
+		{-1, -2, -1},
+		{ 0,  0,  0},
+		{ 1,  2,  1}
+	};
+
+	for (int y = 0; y < height; ++y)
+	{
+		for (int x = 0; x < width; ++x)
+		{
+			double gradientX = 0.0;
+			double gradientY = 0.0;
+
+			for (int ky = -1; ky <= 1; ++ky)
+			{
+				for (int kx = -1; kx <= 1; ++kx)
+				{
+					int px = min(max(x + kx, 0), width - 1);
+					int py = min(max(y + ky, 0), height - 1);
+					gradientX += src[py * width + px] * kernelX[ky + 1][kx + 1];
+					gradientY += src[py * width + px] * kernelY[ky + 1][kx + 1];
+				}
+			}
+
+			dst[y * width + x] = static_cast<unsigned char>(std::sqrt(gradientX * gradientX + gradientY * gradientY));
+			gradientDirection[y * width + x] = std::atan2(gradientY, gradientX);
+		}
+	}
+}
+
+void NonMaximumSuppression(const unsigned char* src, unsigned char* dst, int width, int height, const double* gradientDirection)
+{
+	for (int y = 1; y < height - 1; ++y)
+	{
+		for (int x = 1; x < width - 1; ++x)
+		{
+			double angle = gradientDirection[y * width + x] * 180.0 / M_PI;
+			angle = angle < 0 ? angle + 180 : angle;
+
+			unsigned char currentPixel = src[y * width + x];
+			unsigned char neighbor1 = 0;
+			unsigned char neighbor2 = 0;
+
+			if ((angle >= 0 && angle < 22.5) || (angle >= 157.5 && angle <= 180))
+			{
+				neighbor1 = src[y * width + (x - 1)];
+				neighbor2 = src[y * width + (x + 1)];
+			}
+			else if (angle >= 22.5 && angle < 67.5)
+			{
+				neighbor1 = src[(y - 1) * width + (x + 1)];
+				neighbor2 = src[(y + 1) * width + (x - 1)];
+			}
+			else if (angle >= 67.5 && angle < 112.5)
+			{
+				neighbor1 = src[(y - 1) * width + x];
+				neighbor2 = src[(y + 1) * width + x];
+			}
+			else if (angle >= 112.5 && angle < 157.5)
+			{
+				neighbor1 = src[(y - 1) * width + (x - 1)];
+				neighbor2 = src[(y + 1) * width + (x + 1)];
+			}
+
+			if (currentPixel >= neighbor1 && currentPixel >= neighbor2)
+			{
+				dst[y * width + x] = currentPixel;
+			}
+			else
+			{
+				dst[y * width + x] = 0;
+			}
+		}
+	}
+}
+
+void DoubleThreshold(const unsigned char* src, unsigned char* dst, int width, int height, int lowThreshold, int highThreshold)
+{
+	for (int y = 0; y < height; ++y)
+	{
+		for (int x = 0; x < width; ++x)
+		{
+			unsigned char pixel = src[y * width + x];
+
+			if (pixel >= highThreshold)
+			{
+				dst[y * width + x] = 255;
+			}
+			else if (pixel >= lowThreshold)
+			{
+				dst[y * width + x] = 128;
+			}
+			else
+			{
+				dst[y * width + x] = 0;
+			}
+		}
+	}
+}
+
+void EdgeTrackingByHysteresis(unsigned char* src, int width, int height)
+{
+	for (int y = 1; y < height - 1; ++y)
+	{
+		for (int x = 1; x < width - 1; ++x)
+		{
+			if (src[y * width + x] == 128)
+			{
+				if (src[(y - 1) * width + (x - 1)] == 255 || src[(y - 1) * width + x] == 255 ||
+					src[(y - 1) * width + (x + 1)] == 255 || src[y * width + (x - 1)] == 255 ||
+					src[y * width + (x + 1)] == 255 || src[(y + 1) * width + (x - 1)] == 255 ||
+					src[(y + 1) * width + x] == 255 || src[(y + 1) * width + (x + 1)] == 255)
+				{
+					src[y * width + x] = 255;
+				}
+				else
+				{
+					src[y * width + x] = 0;
+				}
+			}
+		}
+	}
+}
+
+char* CannyEdgeDetection(char* pBmpFileBuf, int lowThreshold, int highThreshold, int kernelSize)
+{
+	BITMAPFILEHEADER* pFileHeader = GetDIBHEADER(pBmpFileBuf);
+	BITMAPINFOHEADER* pDIBInfo = GetDIBINFO(pBmpFileBuf);
+
+	int width = pDIBInfo->biWidth;
+	int height = pDIBInfo->biHeight;
+	int colorBits = pDIBInfo->biBitCount;
+	int bytesPerPixel = colorBits / 8;
+
+	char* pDIBData = GetDIBImageData(pBmpFileBuf);
+
+	unsigned char* grayImage = new unsigned char[width * height];
+	unsigned char* blurredImage = new unsigned char[width * height];
+	unsigned char* gradientImage = new unsigned char[width * height];
+	double* gradientDirection = new double[width * height];
+	unsigned char* nonMaxSuppImage = new unsigned char[width * height];
+	unsigned char* thresholdImage = new unsigned char[width * height];
+
+	// Convert to grayscale
+	for (int y = 0; y < height; ++y)
+	{
+		for (int x = 0; x < width; ++x)
+		{
+			RGBQUAD rgb;
+			GetPixel(pBmpFileBuf, x, y, &rgb);
+			unsigned char gray = static_cast<unsigned char>(0.299 * rgb.rgbRed + 0.587 * rgb.rgbGreen + 0.114 * rgb.rgbBlue);
+			grayImage[y * width + x] = gray;
+		}
+	}
+
+	GaussianBlur(grayImage, blurredImage, width, height, kernelSize, 1.0);
+
+	SobelFilter(blurredImage, gradientImage, width, height, gradientDirection);
+
+	NonMaximumSuppression(gradientImage, nonMaxSuppImage, width, height, gradientDirection);
+
+	DoubleThreshold(nonMaxSuppImage, thresholdImage, width, height, lowThreshold, highThreshold);
+
+	EdgeTrackingByHysteresis(thresholdImage, width, height);
+
+	char* pNewBmpFileBuf = new char[pFileHeader->bfSize];
+	memcpy(pNewBmpFileBuf, pBmpFileBuf, pFileHeader->bfOffBits);
+	unsigned char* pNewDIBData = (unsigned char*)(pNewBmpFileBuf + pFileHeader->bfOffBits);
+
+	for (int y = 0; y < height; ++y)
+	{
+		for (int x = 0; x < width; ++x)
+		{
+			unsigned char value = thresholdImage[(height - 1 - y) * width + x];
+			for (int c = 0; c < bytesPerPixel; ++c)
+			{
+				pNewDIBData[y * width * bytesPerPixel + x * bytesPerPixel + c] = value;
+			}
+		}
+	}
+
+	delete[] grayImage;
+	delete[] blurredImage;
+	delete[] gradientImage;
+	delete[] gradientDirection;
+	delete[] nonMaxSuppImage;
+	delete[] thresholdImage;
+
+	return pNewBmpFileBuf;
 }

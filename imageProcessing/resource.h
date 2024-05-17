@@ -11,6 +11,7 @@
 #define IDD_MEDIAN_FILTER               105
 #define IDD_BILATERAL_FILTER            106
 #define IDD_SHARPEN_DIALOG              107
+#define IDD_CANNY_EDGE                  108
 
 #define IDR_MAINFRAME                   128
 #define IDR_imageProcessingTYPE         130
@@ -38,6 +39,10 @@
 #define IDC_SIGMA_R                     1015
 
 #define IDC_SHARPEN_FACTOR              1016
+
+#define IDC_LOW_THRESHOLD               1017
+#define IDC_HIGH_THRESHOLD              1018
+#define IDC_KERNEL_SIZE                 1019
 
 #define ID_IMAGEPROCESSING_OPENABMPFILE 32771
 #define ID_IMAGEPROCESSING_SAVETONEWBMP 32772
