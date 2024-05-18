@@ -543,60 +543,69 @@ char* MedianFilter(char* pBmpFileBuf, int filterSize)
 
 char* BilateralFilter(char* pBmpFileBuf, float sigma_d, float sigma_r)
 {
-	BITMAPFILEHEADER* pFileHeader = (BITMAPFILEHEADER*)pBmpFileBuf;
-	BITMAPINFOHEADER* pDIBInfo = (BITMAPINFOHEADER*)(pBmpFileBuf + sizeof(BITMAPFILEHEADER));
-	int width = pDIBInfo->biWidth;
-	int height = pDIBInfo->biHeight;
-	int colorBits = pDIBInfo->biBitCount;
+    BITMAPFILEHEADER* pFileHeader = (BITMAPFILEHEADER*)pBmpFileBuf;
+    BITMAPINFOHEADER* pDIBInfo = (BITMAPINFOHEADER*)(pBmpFileBuf + sizeof(BITMAPFILEHEADER));
+    int width = pDIBInfo->biWidth;
+    int height = pDIBInfo->biHeight;
+    int colorBits = pDIBInfo->biBitCount;
 
-	long bytesPerRow = GetWidthBytes(pBmpFileBuf);
-	long bmpFileSize = pFileHeader->bfSize;
-	char* pFilteredBuf = new char[bmpFileSize];
-	memcpy(pFilteredBuf, pBmpFileBuf, pFileHeader->bfOffBits);
+    long bytesPerRow = GetWidthBytes(pBmpFileBuf);
+    long bmpFileSize = pFileHeader->bfSize;
+    char* pFilteredBuf = new char[bmpFileSize];
+    memcpy(pFilteredBuf, pBmpFileBuf, pFileHeader->bfOffBits);
 
-	const int radius = static_cast<int>(2 * sigma_d);
-	const int windowSize = 2 * radius + 1;
+    const int radius = static_cast<int>(2 * sigma_d);
+    const int windowSize = 2 * radius + 1;
 
-	// 高斯函数
-	auto gaussian = [](float x, float sigma) {
-		return expf(-(x * x) / (2 * sigma * sigma));
-	};
+    // 高斯函数
+    auto gaussian = [](float x, float sigma) {
+        return expf(-(x * x) / (2 * sigma * sigma));
+    };
 
-	for (int y = 0; y < height; y++) {
-		for (int x = 0; x < width; x++) {
-			float sum = 0.0f;
-			float normFactor = 0.0f;
-			RGBQUAD rgbCenter;
-			GetPixel(pBmpFileBuf, x, y, &rgbCenter);
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            float sumR = 0.0f, sumG = 0.0f, sumB = 0.0f;
+            float normFactorR = 0.0f, normFactorG = 0.0f, normFactorB = 0.0f;
+            RGBQUAD rgbCenter;
+            GetPixel(pBmpFileBuf, x, y, &rgbCenter);
 
-			for (int dy = -radius; dy <= radius; dy++) {
-				for (int dx = -radius; dx <= radius; dx++) {
-					int nx = min(max(x + dx, 0), width - 1);
-					int ny = min(max(y + dy, 0), height - 1);
+            for (int dy = -radius; dy <= radius; dy++) {
+                for (int dx = -radius; dx <= radius; dx++) {
+                    int nx = min(max(x + dx, 0), width - 1);
+                    int ny = min(max(y + dy, 0), height - 1);
 
-					RGBQUAD rgbNeighbor;
-					GetPixel(pBmpFileBuf, nx, ny, &rgbNeighbor);
+                    RGBQUAD rgbNeighbor;
+                    GetPixel(pBmpFileBuf, nx, ny, &rgbNeighbor);
 
-					float spatialWeight = gaussian(sqrtf(dx * dx + dy * dy), sigma_d);
-					float rangeWeight = gaussian(sqrtf(powf(rgbCenter.rgbRed - rgbNeighbor.rgbRed, 2) +
-						powf(rgbCenter.rgbGreen - rgbNeighbor.rgbGreen, 2) +
-						powf(rgbCenter.rgbBlue - rgbNeighbor.rgbBlue, 2)), sigma_r);
+                    float spatialWeight = gaussian(sqrtf(dx * dx + dy * dy), sigma_d);
+                    float rangeWeightR = gaussian(rgbCenter.rgbRed - rgbNeighbor.rgbRed, sigma_r);
+                    float rangeWeightG = gaussian(rgbCenter.rgbGreen - rgbNeighbor.rgbGreen, sigma_r);
+                    float rangeWeightB = gaussian(rgbCenter.rgbBlue - rgbNeighbor.rgbBlue, sigma_r);
 
-					float weight = spatialWeight * rangeWeight;
+                    sumR += spatialWeight * rangeWeightR * rgbNeighbor.rgbRed;
+                    sumG += spatialWeight * rangeWeightG * rgbNeighbor.rgbGreen;
+                    sumB += spatialWeight * rangeWeightB * rgbNeighbor.rgbBlue;
 
-					sum += weight * rgbNeighbor.rgbRed;
-					normFactor += weight;
-				}
-			}
+                    normFactorR += spatialWeight * rangeWeightR;
+                    normFactorG += spatialWeight * rangeWeightG;
+                    normFactorB += spatialWeight * rangeWeightB;
+                }
+            }
 
-			RGBQUAD rgbFiltered = rgbCenter;
-			rgbFiltered.rgbRed = rgbFiltered.rgbGreen = rgbFiltered.rgbBlue = static_cast<BYTE>(sum / normFactor);
-			SetPixel(pFilteredBuf, x, y, rgbFiltered);
-		}
-	}
+            RGBQUAD rgbFiltered;
+            rgbFiltered.rgbRed = static_cast<BYTE>(sumR / normFactorR);
+            rgbFiltered.rgbGreen = static_cast<BYTE>(sumG / normFactorG);
+            rgbFiltered.rgbBlue = static_cast<BYTE>(sumB / normFactorB);
 
-	return pFilteredBuf;
+            SetPixel(pFilteredBuf, x, y, rgbFiltered);
+        }
+    }
+
+    return pFilteredBuf;
 }
+
+
+
 
 
 char* SharpeningByGradient(char* pBmpFileBuf, float sharpenAmount)
